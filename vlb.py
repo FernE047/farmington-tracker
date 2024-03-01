@@ -3,6 +3,8 @@ with open("outputs/verifieroutput.txt", "r") as o:
     output = "".join(o.readlines())
     lb = {}
     for i in output.split("\n"):
+        if not i:
+            break
         lb.update({i.split(", ")[0]: int(i.split(", ")[1])})
 with open("outputs/verifierfinallb.txt", "a") as flb:
     flb.truncate(0)

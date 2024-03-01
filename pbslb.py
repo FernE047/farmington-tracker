@@ -26,6 +26,20 @@ with open("outputs/pbsoutput.txt", "r") as o:
             if "".join(runso).split("\n")[stat] == "":
                 continue
             st = "".join(runso).split("\n")[stat].split(", ")
+            if len(st) < 2:
+                print(f"Error: {st} does not have at least 2 values.")
+                continue
+
+            output_lines = output.split("\n")
+            if stat >= len(output_lines):
+                print(f"Error: output doesn't have line {stat}.")
+                continue
+
+            output_values = output_lines[stat].split(", ")
+            if len(output_values) < 9:
+                print(f"Error: output line {stat} does not have at least 9 values.")
+                continue
+
             obsoletes.update({st[0]: int(st[1])-int(output.split("\n")[stat].split(", ")[8])})
     lbs.append(obsoletes)
 

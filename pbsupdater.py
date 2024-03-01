@@ -8,7 +8,6 @@ def most_frequent(List):
     try:
         counter = 0
         num = List[0]
-        
         for i in List:
             curr_frequency = List.count(i)
             if(curr_frequency> counter):
@@ -21,7 +20,14 @@ def most_frequent(List):
 
 no2 = 0
 t = time.time()
+skip = True
 for id in fjson:
+    if skip:
+        if id == "x3557mqj":
+            skip = False
+        else:
+            print(id)
+            continue
     alllevels, allcategories, allgames, allgameswithwrs, gamesmostwrs  = [], [], [], [], []
     allpodiums, allwrs, allILwrs, allFGwrs= 0, 0, 0, 0
     deleted = False

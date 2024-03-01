@@ -1,106 +1,88 @@
 import requests, json, time
-src = "https://www.speedrun.com/api/v1/"
 
+def rateLimit():
+    global t, delay
+    now = time.time()
+    duration = now - t
+    if duration < delay:
+        time.sleep(delay - duration)
+    t = now
+
+def doARequest(requestText):
+    while True:
+        rateLimit()
+        try:
+            runs = requests.get(requestText,timeout=60).json()
+            if "status" in runs:
+                if runs["status"] == 404:
+                    return False
+                else:
+                    print(f"sleep 10 secs : {runs}")
+                    time.sleep(10)
+                    continue
+            return runs
+        except Exception as e:
+            print(f"Error: {e}. Retrying after 10 seconds...")
+            time.sleep(10)
+
+def processRuns(runs,allruns,lastrun):
+    for run in runs:
+        players = run.get("players",[])
+        if not players:
+            continue
+        player = players[0]
+        if player["rel"] == "guest" and player["name"].lower() == "n/a":
+            continue
+        if run["id"] == lastrun:
+            return True
+        allruns.append(run)
+    return False
+    
+def getRuns(userid):
+    allruns = []
+    lastrun = "whadohdwao///"
+    for direction in ["asc", "desc"]:
+        offset = 0
+        while offset < 10000:
+            runs = doARequest(f"{src}runs?examiner={userid}&direction={direction}&max=200&offset={offset}&orderby=date")
+            if not runs:
+                return False
+            runs = runs.get("data",[])
+            isABreak = processRuns(runs,allruns,lastrun)
+            if len(runs) < 200 or isABreak:
+                return allruns
+            offset += 200
+        lastrun = allruns[-1]["id"]
+        if offset != 10000:
+            return allruns
+    return allruns
+
+src = "https://www.speedrun.com/api/v1/"
 with open("vdatabase.json", "r") as f:
     fjson = json.loads(f.readlines()[0])
-#with open("outputs/verifieroutput.txt", "w") as v:
-#    v.truncate(0)
+delay = 0.6
 no = 0
 usersid = ""
 t = time.time()
-fjsonk = list(fjson.keys())[:] #list(fjson.keys()).index("86n5knqx")
-while True:
-    if usersid != "":
-        fjsonk = list(fjson.keys())[list(fjson.keys()).index(usersid):]
-        print(usersid)
-    try:
-        for user in fjsonk:
-            usersid = user
-            print(fjson[user][0], len(list(fjson.keys()))-list(fjson.keys()).index(user))
-            if fjson[user][0] in ["dha", "1", "Reni", "jensj56"]:
-                continue
-            # while True:
-            #     no += 1
-            #     try:
-            #         if time.time() - t < 0.8:
-            #             time.sleep(0.8 - (time.time() - t))
-            #         o1600 = requests.get(src + f"runs?examiner={user}&max=1&offset=1600").json()
-            #         t = time.time()
-            #         if "status" in list(o1600.keys()):
-            #             if o1600["status"] == 404:
-            #                 o1600 = []
-            #                 break
-            #             else:
-            #                 print("We're getting rate limited!", o1600["status"])
-            #                 time.sleep(10)
-            #                 continue   
-            #         o1600 = o1600["data"]
-            #         break
-            #     except Exception:
-            #         if "status" in list(o1600.keys()):
-            #             if o1600["status"] == 404:
-            #                 o1600 = []
-            #                 break
-            #             else:
-            #                 print("We're getting rate limited!", o1600["status"], "test")
-            #                 time.sleep(10)
-            #                 continue
-            # if len(o1600) == 0:
-            #     continue
-            allruns = []
-            lastrun = {"id": "whadohdwao///"}
-            breakeverything = False
-            deleted = False
-            for dir in ["asc", "desc"]:
-                offset = 0
-                while offset < 10000:
-                    while True:
-                        try:
-                            if time.time() - t < 0.8:
-                                time.sleep(0.8 - (time.time() - t))
-                            runs = requests.get(src + f"runs?examiner={user}&direction={dir}&max=200&offset={offset}&orderby=date").json()
-                            t = time.time()
-                            if "status" in list(runs.keys()):
-                                if runs["status"] == 404:
-                                    deleted = True
-                                    break
-                                else:
-                                    print("We're getting rate limited!")
-                                    time.sleep(10)
-                                    continue
-                            break
-                        except Exception:
-                            print("We're getting rate limited!")
-                            time.sleep(10)
-                            continue
-                    if deleted:
-                        break
-                    runs = runs["data"]
-                    for run in runs:
-                        if len(run["players"]) > 0:
-                            if run["players"][0]["rel"] == "guest":
-                                if run["players"][0]["name"].lower() == "n/a" or run["players"][0]["name"].lower() == "n\a":
-                                    continue
-                        else:
-                            continue
-                        if run["id"] == lastrun["id"]:
-                            breakeverything = True
-                            break
-                        allruns.append(run)
-                    if len(runs) < 200 or breakeverything:
-                        break
-                    offset += 200
-                if offset != 10000:
-                    break
-                lastrun = allruns[-1]
-                print(len(allruns)) 
-            with open("outputs/verifieroutput.txt", "a") as f:
-                if deleted:
-                    continue
-                else:
-                    f.writelines(f"{user}, {len(allruns)}\n")
-        break
-    except Exception:
+fjsonk = list(fjson.keys())
+total = len(fjsonk)
+begin = time.time()
+result = {}
+for n,userid in enumerate(fjsonk):
+    missing = total - n
+    if fjson[userid][0] in ["dha", "1", "Reni", "jensj56"]:
         continue
-
-
+    runs = getRuns(userid)
+    if runs is False:
+        print(f"deleted : {fjson[userid][0]}")
+        continue
+    result[userid] = len(runs)
+    end = time.time()
+    duration = end - begin
+    single = duration / (n+1)
+    remaining = (missing - 1) * single
+    print(f"{fjson[userid][0]} : {missing} : {len(runs)}")
+    print(f"{duration} : {single} : {remaining}")
+with open("outputs/verifieroutput.txt", "a") as f:
+    for i,j in result.items():
+        f.writelines(f"{i}, {j}\n")
