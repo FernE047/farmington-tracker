@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [v1.0.0-beta] - 2024-02-29
 
+this is a merge from bluestonex63's repository and my local machine code, it's still beta because it was not tested yet
+
 ### Added
 - .gitignore to only keep what matters, the code.
 - CHANGELOG.md to keep the changes
