@@ -6,18 +6,31 @@ This is a simple project where we keep track of how many wrs, run, games played 
 
 This code is not my version yet, so I will post here the instructions specified by @bluestonex63:
 
+
 > Ok so the order is:
+>
 > first you run flags.py to get the updated database
+>
 > (it takes like 10 mins)
+>
 > Then you run runsupdater.py
+>
 > Then pbsupdater.py
+>
 > Then you have verifierupdater.py
+>
 > If you want to do a full verifier update you first have to run mods.py
+>
 > And to actually build the boards you have to use pbslb.py, vlb.py, runslb.py
+>
 > Oh and for the verifier script there is another script for the over 20k club
+>
 > Called 1dhareni.py
+>
 > And you have to manually clean out the output files before running the script
+>
 > Thats all 🤣
+>
 > The only important order is to run runsupdater.py before pbsupdater.py for the obsolete runs to be gaming
 
 ### Prerequisites
