@@ -1,4 +1,4 @@
-# Farminston Data Tracker
+# Farmington Data Tracker
 
 This is a simple project where we keep track of how many wrs, run, games played each player on the database.json has. we run the code every week to post the results on our [discord server](https://discord.gg/dCB96RJDAH). 
 
