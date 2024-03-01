@@ -37,10 +37,6 @@ This code is not my version yet, so I will post here the instructions specified 
 
 What things you need to install the software and how to install them.
 
-Give examples
-
-vbnet
-Copy code
 
 ## Running the Code
 
