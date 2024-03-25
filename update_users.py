@@ -1,0 +1,26 @@
+import requests, time, json
+from utils import *
+
+def extract_flag(user_update):
+    flag = user_update.get("location",{})
+    if not flag:
+        return "united_nations"
+    else:
+        flag = flag.get("country",{}).get("code","")
+        if not flag:
+            return "united_nations"
+        return f'flag_{flag[:2]}'
+
+with open("database.json", "r", encoding="UTF-8") as f:
+    users_data = json.load(f)
+for n,user in enumerate(users_data):
+    user_update = doARequest(f"users/{user["id"]}")
+    if not user_update:
+        user["deleted"] = True
+        continue
+    user_update = user_update.get("data",{})
+    user["flag"] = extract_flag(user_update)
+    user["name"] = user_update.get("names",{}).get("international",user["name"])
+    time_estimation(n, len(users_data))
+with open("database.json", "w", encoding="UTF-8") as f:
+    json.dump(users_data, f, indent=4)

@@ -1,88 +1,65 @@
-import requests, json, time
+import json
+import os
+from utils import *
 
-def rateLimit():
-    global t, delay
-    now = time.time()
-    duration = now - t
-    if duration < delay:
-        time.sleep(delay - duration)
-    t = now
+def processRun(run):
+    players = run.get("players",[])
+    if not players: return
+    player = players[0]
+    if player["rel"] == "guest" and player["name"].lower() == "n/a": return
+    return run
 
-def doARequest(requestText):
-    while True:
-        rateLimit()
-        try:
-            runs = requests.get(requestText,timeout=60).json()
-            if "status" in runs:
-                if runs["status"] == 404:
-                    return False
-                else:
-                    print(f"sleep 10 secs : {runs}")
-                    time.sleep(10)
-                    continue
-            return runs
-        except Exception as e:
-            print(f"Error: {e}. Retrying after 10 seconds...")
-            time.sleep(10)
-
-def processRuns(runs,allruns,lastrun):
-    for run in runs:
-        players = run.get("players",[])
-        if not players:
-            continue
-        player = players[0]
-        if player["rel"] == "guest" and player["name"].lower() == "n/a":
-            continue
-        if run["id"] == lastrun:
-            return True
-        allruns.append(run)
-    return False
-    
-def getRuns(userid):
+def processRuns(runs):
     allruns = []
-    lastrun = "whadohdwao///"
-    for direction in ["asc", "desc"]:
-        offset = 0
-        while offset < 10000:
-            runs = doARequest(f"{src}runs?examiner={userid}&direction={direction}&max=200&offset={offset}&orderby=date")
-            if not runs:
-                return False
-            runs = runs.get("data",[])
-            isABreak = processRuns(runs,allruns,lastrun)
-            if len(runs) < 200 or isABreak:
-                return allruns
-            offset += 200
-        lastrun = allruns[-1]["id"]
-        if offset != 10000:
-            return allruns
+    for run in runs:
+        run = processRun(run)
+        if run: allruns.append(run)
     return allruns
 
-src = "https://www.speedrun.com/api/v1/"
-with open("vdatabase.json", "r") as f:
-    fjson = json.loads(f.readlines()[0])
-delay = 0.6
-no = 0
-usersid = ""
-t = time.time()
-fjsonk = list(fjson.keys())
-total = len(fjsonk)
-begin = time.time()
-result = {}
-for n,userid in enumerate(fjsonk):
-    missing = total - n
-    if fjson[userid][0] in ["dha", "1", "Reni", "jensj56"]:
+def process20kRuns(runs,fetched_runs):
+    allruns = []
+    for run in runs:
+        if run["id"] in [fetched_run["id"] for fetched_run in fetched_runs]: continue
+        run = processRun(run)
+        if run: allruns.append(run)
+    return allruns
+    
+def getRuns(user_id):
+    allruns = get_runs(processRuns,examiner=user_id)
+    return allruns
+
+def getRuns20k(moderator):
+    allruns = []
+    for platform_filename in os.listdir("outputs/platforms/"):
+        for emu in ["1", "0"]:
+            for status in ["verified", "rejected"]:
+                with open(f"outputs/platforms/{platform_filename}", "r", encoding="UTF-8") as f:
+                    platform = json.load(f)
+                print(emu, platform["name"], status, moderator["name"], len(allruns))
+                allruns.extend(get_runs(lambda x:process20kRuns(x,allruns), examiner=moderator["id"], emulated=emu, platform=platform["id"], status=status))
+    return allruns
+
+with open("vdatabase.json", "r", encoding="UTF-8") as f:
+    moderators_data = json.load(f)
+updateAllPlatforms()
+total = len(moderators_data)
+for n,moderator in enumerate(moderators_data):
+    print(n,moderator)
+    if is_user_deleted(examiner = moderator["id"]):
+        print(f"deleted : {moderator['name']}")
         continue
-    runs = getRuns(userid)
-    if runs is False:
-        print(f"deleted : {fjson[userid][0]}")
-        continue
-    result[userid] = len(runs)
-    end = time.time()
-    duration = end - begin
-    single = duration / (n+1)
-    remaining = (missing - 1) * single
-    print(f"{fjson[userid][0]} : {missing} : {len(runs)}")
-    print(f"{duration} : {single} : {remaining}")
-with open("outputs/verifieroutput.txt", "a") as f:
-    for i,j in result.items():
-        f.writelines(f"{i}, {j}\n")
+    if moderator["20k_club"]: 
+        runs = getRuns20k(moderator)
+        moderator["20k_club"] = len(runs) >= 20000
+    else:
+        runs = getRuns(moderator["id"])
+        moderator["20k_club"] = len(runs) >= 20000
+        if moderator["20k_club"]:
+            runs = getRuns20k(moderator)
+    moderator["runs_amount"] = len(runs)
+    print(f"{moderator["name"]} : {total - n - 1} : {len(runs)}")
+    time_estimation(n, total)
+with open("vdatabase.json", "w", encoding="UTF-8") as f:
+    json.dump(moderators_data, f, indent=4, ensure_ascii=False)
+make_lb("vdatabase.json", "runs_amount")
+make_lb("vdatabase.json", "game_amount")

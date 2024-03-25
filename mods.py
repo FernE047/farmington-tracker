@@ -1,10 +1,11 @@
 import requests, json, time
-src = "https://www.speedrun.com/api/v1/"
+from utils import *
 
-database = {}
+#CODE NOT READY FOR PRODUCTION
+
+with open("vdatabase.json", "r") as f:
+    database = json.load(f)
 mods = set()
-t = time.time()
-delay = 1
 step = 100
 offset = 0
 while True:
@@ -14,32 +15,27 @@ while True:
             print(f"jumped offset {offset}")
             offset += 1
             step = 100
-        r = requests.get(f"{src}games?offset={offset}&max={step}&embed=moderators",timeout = 60)
-        now = time.time()
-        duration = now - t
-        if duration < delay:
-            sleep_time = delay - (duration)
-            print(f"{step} : {sleep_time}")
-            time.sleep(sleep_time)
-        t = now
-        g = r.json()
-        print(g)
-        games = g["data"]
+        games = doARequest(f"games?offset={offset}&max={step}&embed=moderators")
+        games = games.get("data",[])
         for game in games:
-            for mod in game["moderators"]["data"]:
+            game_id = game.get("id","")
+            json.dump(game, open(f"outputs/games/{game_id}.json", "w"))
+            for mod in game.get("moderators",{}).get("data",[]):
                 modID = mod.get("id","")
-                if not modID:
-                    continue
+                if not modID: continue
                 if modID in mods:
                     database[modID][2] += 1
                     continue
                 mods.add(modID)
+                json.dump(mod, open(f"outputs/mods/{modID}.json", "w"))
                 if mod["location"] == None:
                     flag = ":united_nations:"
                 else:
                     flag = f':flag_{mod["location"]["country"]["code"][:2]}:'
-                print(f'{modID} : {mod["names"]["international"]}, {flag}, 1', offset)
-                database[modID] = [mod["names"]["international"], flag, 1]
+                name = mod["names"]["international"]
+                print(f'{modID} : {name}, {flag}, 1', offset)
+                time_estimation(offset,40000)
+                database[modID] = [name, flag, 1]
         offset += step
         if len(games) < step:
             break

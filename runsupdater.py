@@ -1,56 +1,62 @@
-import requests, json, time
-src = "https://www.speedrun.com/api/v1/"
+import json
+from utils import *
+import os
 
-with open("database.json", "r") as f:
-    fjson = json.loads(f.readlines()[0])
-no, no2 = 0, 0
-t = time.time()
-for id in fjson:
+def process20kRuns(runs,fetched_runs):
     allruns = []
-    totaltime = 0
-    runsIL = 0
-    runsFG = 0
+    for run in runs:
+        if run["id"] in [fetched_run["id"] for fetched_run in fetched_runs]: continue
+        if run: allruns.append(run)
+    return allruns
+    
+def getRuns(user_id):
+    allruns = get_runs(lambda x:x,user=user_id,status="verified")
+    return allruns
+
+def getRuns20k(user):
+    allruns = []
+    for platform_filename in os.listdir("outputs/platforms/"):
+        for emu in ["1", "0"]:
+            with open(f"outputs/platforms/{platform_filename}", "r", encoding="UTF-8") as f:
+                platform = json.load(f)
+            print(user["name"], platform["name"], emu, len(allruns))
+            allruns.extend(get_runs(lambda x:process20kRuns(x,allruns), user=user["id"], emulated=emu, platform=platform["id"], status="verified"))
+    return allruns
+
+with open("database.json", "r", encoding="UTF-8") as f:
+    user_data = json.load(f)
+updateAllPlatforms()
+no, no2 = 0, 0
+total = len(user_data)
+for n,user in enumerate(user_data):
+    if is_user_deleted(user = user["id"]): 
+        print(f"deleted : {user["name"]}")
+        continue
+    runs = []
+    if user["20k_club"]:
+        runs = getRuns20k(user)
+        user["20k_club"] = len(runs) >= 20000
+    else:
+        runs = getRuns(user["id"])
+        user["20k_club"] = len(runs) >= 20000
+        if user["20k_club"]:
+            runs = getRuns20k(user)
     no2 += 1
-    lastrun = {"id": "whadohdwao///"}
-    breakeverything = False
-    deleted = False
-    for dir in ["asc", "desc"]:
-        offset = 0
-        while offset < 10000:
-            if time.time() - t < 0.8:
-                time.sleep(0.8 - (time.time() - t))
-                t = time.time()
-            runs = requests.get(src + f"runs?user={id}&direction={dir}&max=200&offset={offset}&orderby=date&status=verified").json()
-            no += 1
-            if "status" in list(runs.keys()):
-                if runs["status"] == 404:
-                    deleted = True
-                    break
-                else:
-                    print("We're getting rate limited!")
-                    time.sleep(10)
-                    continue
-            runs = runs["data"]
-            for run in runs:
-                if run["id"] == lastrun["id"]:
-                    breakeverything = True
-                    break
-                allruns.append(run)
-            if len(runs) < 200 or breakeverything:
-               break
-            offset += 200
-        if offset != 10000:
-           break
-        lastrun = allruns[-1]
-    for run in allruns:
-        totaltime += run["times"]["primary_t"]
+    user["totaltime"] = 0
+    user["runsIL"] = 0
+    user["runsFG"] = 0
+    for run in runs:
+        user["totaltime"] += run["times"]["primary_t"]
         if run["level"] == None:
-            runsFG += 1
+            user["runsFG"] += 1
         else:
-            runsIL += 1
-    print(fjson[id][0], len(list(fjson.keys()))-no2, len(allruns), runsFG, runsIL, totaltime, runsFG + runsIL == len(allruns))
-    with open("outputs/runsoutput.txt", "a") as output:
-        if deleted:
-            continue
-        else:
-            output.writelines(f"{id}, {len(allruns)}, {runsFG}, {runsIL}, {totaltime}\n")
+            user["runsIL"] += 1
+    user["runs"] = len(runs)
+    print(f"{n} : {user}")
+    time_estimation(n, total)
+with open("database.json", "w", encoding="UTF-8") as f:
+    json.dump(user_data, f, indent=4)
+make_lb("database.json", "totaltime", 200, 40, lambda x: format_time(x))
+make_lb("database.json", "runs")
+make_lb("database.json", "runsIL")
+make_lb("database.json", "runsFG")

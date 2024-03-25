@@ -1,4 +1,7 @@
 import requests, json, time
+
+#NEEDS TO BE REWRITTEN
+
 src = "https://www.speedrun.com/api/v1/"
 
 t = time.time()
@@ -11,7 +14,7 @@ for offset in range(100000000000):
                 games = games["data"]
                 break
             except Exception:
-                print(f"we trhottledauhadiuhw at offset : {offset}, error : {games['status'], games['message']}")
+                print(f"we throttle at offset : {offset}, error : {games['status'], games['message']}")
                 time.sleep(10)
         except Exception:
             for i in range(2):
