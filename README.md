@@ -56,13 +56,13 @@ We use [SemVer](http://semver.org/) for versioning. For the versions available, 
 
 ## Authors
 
-* **Felipe Reis** - *Initial work* - [Github](https://github.com/FelipeReis11011)
+* **FernE047** - *Initial work* - [Github](https://github.com/FernE047)
 * **Rayu_** - *Code Optimizations* - [Deleted Github](https://github.com/Rayu1)
-* **Felipe Reis** - *Code De-Optimizations* - [Github](https://github.com/FelipeReis11011)
+* **FernE047** - *Code De-Optimizations* - [Github](https://github.com/FernE047)
 * **Bluestonex63** - *Maintaining the project from 2022 to 2023* - [Github](https://github.com/Bluestonex63)
-* **Felipe Reis** - *Current Developer* - [Github](https://github.com/FelipeReis11011)
+* **FernE047** - *Current Developer* - [Github](https://github.com/FernE047)
 
-See also the list of [contributors](https://github.com/FelipeReis11011/farmington-tracker/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/FernE047/farmington-tracker/contributors) who participated in this project.
 
 ## License
 
