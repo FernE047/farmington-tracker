@@ -106,21 +106,32 @@ def get_runs(func,**kwargs):
         if offset != 10000: return allruns
     return allruns
 
-def make_lb(database, category, limit=200, space_amount=28, func_value=lambda x: x):
+def make_lb(database, category, limit=200, space_amount=28,
+            func_value=lambda x: x, reverse=True, subtitle="",
+            flag = True, func_flag="", func_name=""):
+    if flag:
+        if not func_flag:
+            func_flag = lambda x: f"`:{data['flag']}:`"
+    else:
+        func_flag = lambda x: ""
+    if not func_name:
+        func_name = lambda x: x["name"]
     with open(database, "r", encoding="UTF-8") as f:
         data = json.load(f)
     lb = {}
-    sorted_data = sorted(data, key=lambda x: x[category], reverse=True)
+    sorted_data = sorted(data, key=lambda x: x[category], reverse=reverse)
     untied_position, position, last_value = 1, 1, []
-    with open(f"outputs/{category}_lb.txt", "w", encoding="UTF-8") as f:
-        for user in sorted_data:
-            value = func_value(user[category])
+    with open(f"outputs/{subtitle}_{category}_lb.txt", "w", encoding="UTF-8") as f:
+        for data in sorted_data:
+            value = func_value(data[category])
             if value != last_value:
                 position = untied_position
             if position > limit: break
-            main_message = f"{position}{value}{user['name']}"
+            name = func_name(data)
+            flag = func_flag(data)
+            main_message = f"{position}{value}{name}"
             pretty_spaces = " "*(space_amount-len(main_message))
-            f.writelines(f"`{position}.`:{user['flag']}:`{user['name']}{pretty_spaces}{value}`\n")
+            f.writelines(f"`{position}.{flag}{name}{pretty_spaces} {value}`\n")
             untied_position+=1
             last_value = value
 

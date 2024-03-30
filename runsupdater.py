@@ -26,7 +26,6 @@ def getRuns20k(user):
 with open("database.json", "r", encoding="UTF-8") as f:
     user_data = json.load(f)
 updateAllPlatforms()
-no, no2 = 0, 0
 total = len(user_data)
 for n,user in enumerate(user_data):
     if is_user_deleted(user = user["id"]): 
@@ -41,7 +40,6 @@ for n,user in enumerate(user_data):
         user["20k_club"] = len(runs) >= 20000
         if user["20k_club"]:
             runs = getRuns20k(user)
-    no2 += 1
     user["totaltime"] = 0
     user["runsIL"] = 0
     user["runsFG"] = 0
