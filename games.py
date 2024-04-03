@@ -94,7 +94,7 @@ while True:
         data_total["variables"].extend(data["variables"])
         data_total["values"].extend(data["values"])
     print(len(data_total["games"]))
-    if len(games) < 100:
+    if len(games) < 200:
         break
     offset += 200
     time_estimation(offset, 40000)

@@ -69,14 +69,19 @@ def dump_info(data, folder):
         json.dump(data, file, indent=4, ensure_ascii=False)
 
 def updateAllPlatforms():
+    all_platforms = []
     offset = 0
     while True:
-        platforms = doARequest(f"platforms?offset={offset}&max=200")
-        if not platforms: return
+        platforms = doARequest(f"platforms?offset={offset}&max=100")
+        if not platforms:
+            return all_platforms
         for platform in platforms['data']:
             dump_info(platform,"platforms")
-        if len(platforms) < 200: return
-        offset += 200
+            all_platforms.append(platform)
+        print(len(platforms['data']))
+        if len(platforms['data']) < 100:
+            return all_platforms
+        offset += 100
 
 def separateNewRuns(runs,lastrun_id):
     if lastrun_id not in [run["id"] for run in runs]: return runs
@@ -119,7 +124,8 @@ def make_lb(database, category, limit=200, space_amount=28,
     with open(database, "r", encoding="UTF-8") as f:
         data = json.load(f)
     lb = {}
-    sorted_data = sorted(data, key=lambda x: x[category], reverse=reverse)
+    filtered_data = [x for x in data if x.get(category) != None]
+    sorted_data = sorted(filtered_data, key=lambda x: x[category], reverse=reverse)
     untied_position, position, last_value = 1, 1, []
     with open(f"outputs/{subtitle}_{category}_lb.txt", "w", encoding="UTF-8") as f:
         for data in sorted_data:
