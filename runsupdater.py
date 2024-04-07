@@ -54,7 +54,7 @@ for n,user in enumerate(user_data):
     time_estimation(n, total)
 with open("database.json", "w", encoding="UTF-8") as f:
     json.dump(user_data, f, indent=4)
-make_lb("database.json", "totaltime", 200, 40, lambda x: format_time(x))
+make_lb("database.json", "totaltime", 200, 40, lambda x: format_time(int(x)))
 make_lb("database.json", "runs")
 make_lb("database.json", "runsIL")
 make_lb("database.json", "runsFG")
