@@ -98,6 +98,39 @@ with open('multiplayer_runs.csv', mode='a', newline='', encoding='utf-8') as csv
 
 print("Done!")
 
+from collections import defaultdict
+
+# Initialize an empty dictionary to store the frequency of each value
+value_count = defaultdict(int)
+
+# Open the CSV file for reading
+n = 0
+with open('multiplayer_runs.csv', 'r',encoding="UTF-8") as csvfile:
+    csvreader = csv.reader(csvfile)
+    
+    # Skip the header row
+    next(csvreader)
+    
+    # Loop through each row in the CSV file
+    for row in csvreader:
+        n+=1
+        # Only consider values after the second column
+        for value in row[1:]:
+            value_count[value] += 1
+# Sort the dictionary items by frequency in descending order
+sorted_value_count = {k: v for k, v in sorted(value_count.items(), key=lambda item: item[1], reverse=True)}
+
+# Open the output CSV file for writing
+with open('value_count_output.csv', 'w', newline='',encoding="UTF-8") as outfile:
+    csvwriter = csv.writer(outfile, delimiter = ";")
+    
+    # Write the header row
+    csvwriter.writerow(['Value', 'Frequency'])
+    
+    # Write the frequency of each value
+    for value, count in sorted_value_count.items():
+        csvwriter.writerow([value, count])
+
 
 # Function for API call to get user details
 def get_user_details(user_id):
@@ -127,7 +160,7 @@ final_leaderboard = {}
 for user_id, score in sorted(leaderboard.items(), key=lambda x: x[1], reverse=True):
     n+=1
     print(n)
-    if n>150:
+    if n>300:
         break
     if len(user_id) == 8:
         user_details = get_user_details(user_id)
@@ -153,14 +186,12 @@ for n, (user_id, details) in enumerate(final_leaderboard.items(), 1):
     print(f"`{rank}.{score}`{flag}`{username}`")
     last_one = score
 
-
 # Function to get user details
 def get_user_details(user_id, known_users):
     if user_id in known_users:
         return known_users[user_id]
-    
-    src = "https://www.speedrun.com/api/v1/"
-    response = requests.get(src + f"users/{user_id}").json()
+
+    response = doARequest(f"users/{user_id}")
     
     try:
         data = response["data"]
@@ -168,12 +199,12 @@ def get_user_details(user_id, known_users):
         flag = f':flag_{data["location"]["country"]["code"][:2]}:' if data["location"] else ":united_nations:"
         known_users[user_id] = {"username": username, "flag": flag}
         return known_users[user_id]
-    except KeyError:
+    except:
         return {"username": user_id, "flag": "(quest)"}
 
 # Read CSV and populate initial team leaderboard
 team_leaderboard = {}
-with open('multiplayer_runs - Copia.csv', 'r', encoding="UTF-8") as csvfile:
+with open('multiplayer_runs.csv', 'r', encoding="UTF-8") as csvfile:
     csvreader = csv.reader(csvfile, delimiter = ",")  # Assuming the delimiter is ","
     next(csvreader)  # Skip the header
     

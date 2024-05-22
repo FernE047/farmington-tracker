@@ -1,11 +1,15 @@
 import requests, json, time
 from utils import *
 
-#CODE NOT READY FOR PRODUCTION
-
-with open("vdatabase.json", "r") as f:
-    database = json.load(f)
+with open("vdatabase.json", "r", encoding = "UTF-8") as f:
+    database_list = json.load(f)
 mods = set()
+database = {}
+for mod in database_list:
+    mod["game_amount"] = 0
+    mods.add(mod["id"])
+    database[mod["id"]] = mod
+database_list = None
 step = 100
 offset = 0
 while True:
@@ -15,7 +19,7 @@ while True:
             print(f"jumped offset {offset}")
             offset += 1
             step = 100
-        games = doARequest(f"games?offset={offset}&max={step}&embed=moderators")
+        games = doARequest(f"games?offset={offset}&max={step}&embed=moderators", mute_exceptions=True)
         games = games.get("data",[])
         for game in games:
             game_id = game.get("id","")
@@ -24,7 +28,7 @@ while True:
                 modID = mod.get("id","")
                 if not modID: continue
                 if modID in mods:
-                    database[modID][2] += 1
+                    database[modID]["game_amount"] += 1
                     continue
                 mods.add(modID)
                 json.dump(mod, open(f"outputs/mods/{modID}.json", "w"))
@@ -35,7 +39,12 @@ while True:
                 name = mod["names"]["international"]
                 print(f'{modID} : {name}, {flag}, 1', offset)
                 time_estimation(offset,40000)
-                database[modID] = [name, flag, 1]
+                database[modID] = {
+                    "id": modID,
+                    "name": name,
+                    "flag": flag,
+                    "game_amount": 1
+                }
         offset += step
         if len(games) < step:
             break
@@ -43,6 +52,8 @@ while True:
         step = step//2
         continue
 
-with open("vdatabase.json", "a") as vd:
+database_list = list(database.values())
+
+with open("vdatabase.json", "w", encoding="UTF-8") as vd:
     vd.truncate(0)
-    vd.writelines(json.dumps(database))
+    vd.writelines(json.dumps(database_list))

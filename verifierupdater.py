@@ -48,7 +48,9 @@ for n,moderator in enumerate(moderators_data):
     if is_user_deleted(examiner = moderator["id"]):
         print(f"deleted : {moderator['name']}")
         continue
-    if moderator["20k_club"]: 
+    if "20k_club" not in moderator:
+        moderator["20k_club"] = False
+    if moderator["20k_club"]:
         runs = getRuns20k(moderator)
         moderator["20k_club"] = len(runs) >= 20000
     else:

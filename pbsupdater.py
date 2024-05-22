@@ -60,7 +60,8 @@ def getDataV2(user):
     allpodiums, allwrs, allILwrs, allFGwrs, allObsoletes, allPbs= 0, 0, 0, 0, 0, 0
     pbs_data = doARequest(f"GetUserLeaderboard?userId={user['id']}", v=2)
     if not pbs_data: return
-    for run in pbs_data['runs']:
+    if "error" in pbs_data: return
+    for run in pbs_data.get('runs',[]):
         if "place" in run:
             if run["place"] == 1:
                 allwrs += 1
@@ -90,13 +91,13 @@ def getDataV2(user):
 
 skip = True
 for n,user in enumerate(user_datas):
-    if user["20k_club"]:
-        getDataV2(user)
-    else:
-        getDataV1(user)
+    if user['id'] != "y8d16wm8":
+        continue
+    getDataV2(user)
     print(user["name"])
     time_estimation(n, len(user_datas))
 with open("database.json", "w", encoding="UTF-8") as f:
     json.dump(user_datas, f, indent=4)
-for cat in ["levels", "categories", "games", "wrs", "FGwrs", "ILwrs", "podiums", "pbs", "allGamesWithWrs", "obsoletes"]:#, "mostFrequentGame"]:
+for cat in ["levels", "categories", "games", "wrs", "FGwrs", "ILwrs", "podiums", "pbs", "allGamesWithWrs", "obsoletes"]:
+    print(cat)
     make_lb("database.json", cat)

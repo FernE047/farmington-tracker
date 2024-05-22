@@ -4,6 +4,7 @@ SRC_URL = "https://www.speedrun.com/api/v"
 DELAY = 0.7 # delay to not exceed rate limit
 RATE_LIMIT = time.time()
 BEGIN = time.time()
+TIME_DATA = []
 
 def format_time(seconds):
     days = seconds // 86400
@@ -27,13 +28,17 @@ def format_time(seconds):
     return time_str
 
 def time_estimation(n, total):
-    global BEGIN
+    global BEGIN, TIME_DATA
     end = time.time()
-    to_process = total - n
     elapsed_time = end - BEGIN
-    single = elapsed_time / (n+1)
-    remaining = (to_process - 1) * single
-    print(" : ".join([format_time(elapsed_time), str(single), format_time(remaining)]))
+    TIME_DATA.append(elapsed_time)
+    if len(TIME_DATA) > 10:
+        TIME_DATA.pop(0)
+    average = sum(TIME_DATA) / len(TIME_DATA)
+    to_process = total - n
+    remaining = (to_process - 1) * average
+    print(" : ".join([format_time(elapsed_time), str(average), format_time(remaining)]))
+    BEGIN = end
 
 def rateLimit():
     global RATE_LIMIT, DELAY
@@ -43,7 +48,7 @@ def rateLimit():
         time.sleep(DELAY - duration)
     RATE_LIMIT = now
 
-def doARequest(requestText, v=1):
+def doARequest(requestText, v=1, mute_exceptions=False):
     global SRC_URL
     src_url = f"{SRC_URL}{v}/"
     while True:
@@ -63,6 +68,8 @@ def doARequest(requestText, v=1):
             print("TimeoutError. Retrying after 10 seconds...")
             time.sleep(10)
         except Exception as e:
+            if mute_exceptions:
+                return None
             print(f"Error: {e}. Retrying after 10 seconds...")
             time.sleep(10)
 
@@ -125,11 +132,14 @@ def make_lb(database, category, limit=200, space_amount=28,
         func_name = lambda x: x["name"]
     with open(database, "r", encoding="UTF-8") as f:
         data = json.load(f)
-    lb = {}
     filtered_data = [x for x in data if x.get(category) != None]
     sorted_data = sorted(filtered_data, key=lambda x: x[category], reverse=reverse)
     untied_position, position, last_value = 1, 1, []
-    with open(f"outputs/{subtitle}_{category}_lb.txt", "w", encoding="UTF-8") as f:
+    if not subtitle:
+        name_file = f"outputs/{"_".join([category, "lb.txt"])}"
+    else:
+        name_file = f"outputs/{"_".join([subtitle, category, "lb.txt"])}"
+    with open(name_file, "w", encoding="UTF-8") as f:
         for data in sorted_data:
             value = func_value(data[category])
             if value != last_value:
@@ -147,39 +157,3 @@ def is_user_deleted(**kwargs):
     params = "=".join(list(kwargs.items())[0])
     runs = doARequest(f"runs?{params}&max=1")
     return not runs
-
-def webScrape(user_id): 
-    # This function is not used in the code, use by your own risk.
-    # it's against the SRC ToS to scrape their website.
-    url = f"https://www.speedrun.com/users/{user_id}"
-    while True:
-        try:
-            response = requests.get(url)
-            html = response.text
-
-            # Find the div with class "hidden"
-            start_index = html.find('<div class="hidden">')
-            end_index = html.find('</div>', start_index)
-            hidden_div = html[start_index:end_index]
-
-            # Find the JSON inside the script tag
-            start_index = hidden_div.find('type="application/json">')
-            end_index = hidden_div.find('</script>', start_index)
-            script_content = hidden_div[start_index:end_index]
-
-            # Extract the JSON data
-            start_index = script_content.find('{')
-            end_index = script_content.rfind('}') + 1
-            json_data = script_content[start_index:end_index]
-
-            # This Json will have all data used on the user runs, categories, variables, everything
-            # but you have to make a second request to get the user's Ils runs
-            # https://www.speedrun.com/users/{user_id}?view=levels
-
-            return json.loads(json_data)
-        except TimeoutError:
-            print("TimeoutError. Retrying after 10 seconds...")
-            time.sleep(10)
-        except Exception as e:
-            print(f"Error: {e}. Retrying after 10 seconds...")
-            time.sleep(10)
