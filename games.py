@@ -97,7 +97,7 @@ while True:
     if len(games) < 200:
         break
     offset += 200
-    time_estimation(offset, 40000)
+    time_estimation(offset, 40000, 200)
 for cat in data_total:
     with open(f"outputs/{cat}_output.json", "w") as g:
         json.dump(data_total[cat], g, indent=4)
@@ -108,10 +108,10 @@ subtitle = "game"
 for cat in ["levels","categories","variables","platforms","gametypes","regions","genres","engines","developers","publishers","moderators"]:
     make_lb(database_name, f"{cat}", limit = 100, subtitle=subtitle, flag = False)
 for cat in ["name","abbreviation","weblink","discord"]:
-    func_name = lambda x: f"{x["name"]}" + (f" : {x[cat]}" if cat != "name" else "")
+    func_name = lambda x: f"{x['name']}" + (f" : {x[cat]}" if cat != "name" else "")
     make_lb(database_name, f"{cat}_length", limit = 100, subtitle=subtitle, flag = False, func_name=func_name)
 #for cat in ["release-date","created"]:
-#    func_name = lambda x: f"{x["name"]} : {x[cat]}"
+#    func_name = lambda x: f"{x['name']} : {x[cat]}"
 #    make_lb(database_name, f"{cat}", limit = 100, subtitle=subtitle, reverse = False, flag = False, func_name=func_name)
 
 
@@ -119,30 +119,30 @@ for cat in ["name","abbreviation","weblink","discord"]:
 database_name = "outputs/levels_output.json"
 subtitle = "level"
 for cat in ["name","rules","weblink"]:
-    func_name = lambda x: f"{x["game"]} : {x[cat]}"
+    func_name = lambda x: f"{x['game']} : {x[cat]}"
     make_lb(database_name, f"{cat}_length", limit = 100, subtitle=subtitle, flag = False, func_name=func_name)
 
 #categories
 database_name = "outputs/categories_output.json"
 subtitle = "category"
 for cat in ["name","rules","weblink"]:
-    func_name = lambda x: f"{x["game"]} : {x[cat]}"
+    func_name = lambda x: f"{x['game']} : {x[cat]}"
     make_lb(database_name, f"{cat}_length", limit = 100, subtitle=subtitle, flag = False, func_name=func_name)
 
 #variables
 database_name = "outputs/variables_output.json"
 subtitle = "variable"
 cat = "name"
-func_name = lambda x: f"{x["game"]} : {x[cat]}"
+func_name = lambda x: f"{x['game']} : {x[cat]}"
 make_lb(database_name, f"{cat}_length", limit = 100, subtitle=subtitle, flag = False, func_name=func_name)
 subtitle = "variable"
 cat = "values"
-func_name = lambda x: f"{x["game"]}"
+func_name = lambda x: f"{x['game']}"
 make_lb(database_name, f"{cat}_length", limit = 100, subtitle=subtitle, flag = False, func_name=func_name)
 
 #values
 database_name = "outputs/values_output.json"
 subtitle = "value"
 for cat in ["label","rules"]:
-    func_name = lambda x: f"{x["game"]} : {x["variable"]} : {x["label"]}"
+    func_name = lambda x: f"{x['game']} : {x['variable']} : {x['label']}"
     make_lb(database_name, f"{cat}_length", limit = 100, subtitle=subtitle, flag = False, func_name=func_name)

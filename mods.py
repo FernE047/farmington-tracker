@@ -38,13 +38,13 @@ while True:
                     flag = f':flag_{mod["location"]["country"]["code"][:2]}:'
                 name = mod["names"]["international"]
                 print(f'{modID} : {name}, {flag}, 1', offset)
-                time_estimation(offset,40000)
                 database[modID] = {
                     "id": modID,
                     "name": name,
                     "flag": flag,
                     "game_amount": 1
                 }
+            time_estimation(offset,40000,step)
         offset += step
         if len(games) < step:
             break

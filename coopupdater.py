@@ -169,10 +169,10 @@ for user_id, score in sorted(leaderboard.items(), key=lambda x: x[1], reverse=Tr
             username = user_details["username"]
         else:
             flag = "(guest)"
-            username = user_id
+            username = user_id.strip()
     else:
         flag = "(guest)"
-        username = user_id
+        username = user_id.strip()
 
     final_leaderboard[user_id] = [username, flag, score]
 

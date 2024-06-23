@@ -1,3 +1,4 @@
+import os
 import requests, time, json
 
 SRC_URL = "https://www.speedrun.com/api/v"
@@ -27,10 +28,10 @@ def format_time(seconds):
         time_str += f"{seconds_str}s"
     return time_str
 
-def time_estimation(n, total):
+def time_estimation(n, total, step = 1):
     global BEGIN, TIME_DATA
     end = time.time()
-    elapsed_time = end - BEGIN
+    elapsed_time = (end - BEGIN) / step
     TIME_DATA.append(elapsed_time)
     if len(TIME_DATA) > 10:
         TIME_DATA.pop(0)
@@ -63,6 +64,12 @@ def doARequest(requestText, v=1, mute_exceptions=False):
                     print(f"sleep 10 secs : {data}")
                     time.sleep(10)
                     continue
+            if "error" in data:
+                if mute_exceptions:
+                    return None
+                print(f"Error: {data['message']}. Retrying after 10 seconds...")
+                time.sleep(10)
+                continue
             return data
         except TimeoutError:
             print("TimeoutError. Retrying after 10 seconds...")
@@ -74,6 +81,8 @@ def doARequest(requestText, v=1, mute_exceptions=False):
             time.sleep(10)
 
 def dump_info(data, folder):
+    if not os.path.exists(f"outputs/{folder}"):
+        os.makedirs(f"outputs/{folder}")
     with open(f"outputs/{folder}/{data['id']}.json", "w",encoding="UTF-8") as file:
         json.dump(data, file, indent=4, ensure_ascii=False)
 
@@ -136,9 +145,9 @@ def make_lb(database, category, limit=200, space_amount=28,
     sorted_data = sorted(filtered_data, key=lambda x: x[category], reverse=reverse)
     untied_position, position, last_value = 1, 1, []
     if not subtitle:
-        name_file = f"outputs/{"_".join([category, "lb.txt"])}"
+        name_file = f"outputs/{'_'.join([category, 'lb.txt'])}"
     else:
-        name_file = f"outputs/{"_".join([subtitle, category, "lb.txt"])}"
+        name_file = f"outputs/{'_'.join([subtitle, category, 'lb.txt'])}"
     with open(name_file, "w", encoding="UTF-8") as f:
         for data in sorted_data:
             value = func_value(data[category])

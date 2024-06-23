@@ -89,10 +89,8 @@ def getDataV2(user):
     user["allGamesWithWrs"] = len(allgameswithwrs)
     user["mostFrequentGame"] = most_frequent(gamesmostwrs)
 
-skip = True
 for n,user in enumerate(user_datas):
-    if user['id'] != "y8d16wm8":
-        continue
+    user["flag"] = user["flag"].replace(":","")
     getDataV2(user)
     print(user["name"])
     time_estimation(n, len(user_datas))
@@ -101,3 +99,5 @@ with open("database.json", "w", encoding="UTF-8") as f:
 for cat in ["levels", "categories", "games", "wrs", "FGwrs", "ILwrs", "podiums", "pbs", "allGamesWithWrs", "obsoletes"]:
     print(cat)
     make_lb("database.json", cat)
+    
+import runsupdater

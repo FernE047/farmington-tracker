@@ -59,7 +59,7 @@ for n,moderator in enumerate(moderators_data):
         if moderator["20k_club"]:
             runs = getRuns20k(moderator)
     moderator["runs_amount"] = len(runs)
-    print(f"{moderator["name"]} : {total - n - 1} : {len(runs)}")
+    print(f"{moderator['name']} : {total - n - 1} : {len(runs)}")
     time_estimation(n, total)
 with open("vdatabase.json", "w", encoding="UTF-8") as f:
     json.dump(moderators_data, f, indent=4, ensure_ascii=False)

@@ -1,4 +1,4 @@
-import requests, time, json
+import json
 from utils import *
 
 def extract_flag(user_update):
@@ -14,7 +14,7 @@ def extract_flag(user_update):
 with open("database.json", "r", encoding="UTF-8") as f:
     users_data = json.load(f)
 for n,user in enumerate(users_data):
-    user_update = doARequest(f"users/{user["id"]}")
+    user_update = doARequest(f"users/{user['id']}")
     if not user_update:
         user["deleted"] = True
         continue
