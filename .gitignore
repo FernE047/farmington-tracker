@@ -4,3 +4,5 @@ deletedusers.txt
 api.js
 *.csv
 /__pycache__
+database/*.db
+!database/public.db
