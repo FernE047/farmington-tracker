@@ -1,5 +1,6 @@
 import json
 import utils
+from core.request_handler import request_handler
 
 
 def extract_flag(user_update):
@@ -16,7 +17,7 @@ def extract_flag(user_update):
 with open("database.json", "r", encoding="UTF-8") as f:
     users_data = json.load(f)
 for n, user in enumerate(users_data):
-    user_update = utils.doARequest(f"users/{user['id']}")
+    user_update = request_handler.request(f"users/{user['id']}")
     if not user_update:
         user["deleted"] = True
         continue

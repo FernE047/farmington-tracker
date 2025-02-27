@@ -1,6 +1,7 @@
 import json
 import utils
 import os
+from core.request_handler import request_handler
 
 
 def process20kRuns(runs, fetched_runs):
@@ -21,11 +22,9 @@ def getRuns(user_id):
 def getRuns20k(user):
     allruns = []
     for platform_filename in os.listdir("outputs/platforms/"):
+        with open(f"outputs/platforms/{platform_filename}", "r", encoding="UTF-8") as f:
+            platform = json.load(f)
         for emu in ["1", "0"]:
-            with open(
-                f"outputs/platforms/{platform_filename}", "r", encoding="UTF-8"
-            ) as f:
-                platform = json.load(f)
             print(user["name"], platform["name"], emu, len(allruns))
             allruns.extend(
                 utils.get_runs(

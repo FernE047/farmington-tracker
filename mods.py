@@ -1,5 +1,6 @@
 import json
 import utils
+from core.request_handler import request_handler
 
 with open("vdatabase.json", "r", encoding="UTF-8") as f:
     database_list = json.load(f)
@@ -19,7 +20,7 @@ while True:
             print(f"jumped offset {offset}")
             offset += 1
             step = 100
-        games = utils.doARequest(
+        games = request_handler.request(
             f"games?offset={offset}&max={step}&embed=moderators", mute_exceptions=True
         )
         games = games.get("data", [])

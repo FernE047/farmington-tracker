@@ -1,4 +1,5 @@
 import requests
+from core.request_handler import request_handler
 import utils
 import csv
 import time
@@ -15,7 +16,7 @@ with open("coop_categories.csv", "w", newline="", encoding="UTF-8") as csvfile:
     start_time = time.time()
     total_games = 40000
     while True:
-        games = utils.doARequest(
+        games = request_handler.request(
             f"games?offset={offset}&max=200&embed=levels,categories"
         )
         if not games:
@@ -165,7 +166,7 @@ for n, (user_id, details) in enumerate(final_leaderboard.items(), 1):
 def get_user_details(user_id, known_users):
     if user_id in known_users:
         return known_users[user_id]
-    response = utils.doARequest(f"users/{user_id}")
+    response = request_handler.request(f"users/{user_id}")
     try:
         data = response["data"]
         username = data["names"]["international"]

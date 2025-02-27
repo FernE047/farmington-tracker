@@ -1,6 +1,7 @@
 import json
 import utils
 import runsupdater
+from core.request_handler import request_handler
 
 with open("database.json", "r", encoding="UTF-8") as f:
     user_datas = json.load(f)
@@ -27,7 +28,7 @@ def getDataV1(user):
     allgameswithwrs = set()
     gamesmostwrs = []
     allpodiums, allwrs, allILwrs, allFGwrs = 0, 0, 0, 0
-    pbs_data = utils.doARequest(f"users/{user['id']}/personal-bests")
+    pbs_data = request_handler.request(f"users/{user['id']}/personal-bests")
     if not pbs_data:
         return
     pbs = pbs_data["data"]
@@ -65,7 +66,7 @@ def getDataV2(user):
     allgameswithwrs = set()
     gamesmostwrs = []
     allpodiums, allwrs, allILwrs, allFGwrs, allObsoletes = 0, 0, 0, 0, 0
-    pbs_data = utils.doARequest(f"GetUserLeaderboard?userId={user['id']}", v=2)
+    pbs_data = request_handler.request(f"GetUserLeaderboard?userId={user['id']}", v=2)
     if not pbs_data:
         return
     if "error" in pbs_data:

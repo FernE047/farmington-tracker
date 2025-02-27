@@ -1,6 +1,8 @@
 import json
 import utils
 
+from core.request_handler import request_handler
+
 
 def extract_length(data, cat):
     value = data.get(cat, "")
@@ -114,7 +116,7 @@ data_total = {
     "values": [],
 }
 while True:
-    games = utils.doARequest(
+    games = request_handler.request(
         f"games?offset={offset}&max=200&embed=levels,categories,variables"
     )
     if not games:
