@@ -1,7 +1,7 @@
 import json
+from common import formatter
 import utils
 import os
-from core.request_handler import request_handler
 
 
 def process20kRuns(runs, fetched_runs):
@@ -71,7 +71,7 @@ def main():
     with open("database.json", "w", encoding="UTF-8") as f:
         json.dump(user_data, f, indent=4)
     utils.make_lb(
-        "database.json", "totaltime", 200, 40, lambda x: utils.format_time(int(x))
+        "database.json", "totaltime", 200, 40, lambda x: formatter.format_time(int(x))
     )
     utils.make_lb("database.json", "runs")
     utils.make_lb("database.json", "runsIL")

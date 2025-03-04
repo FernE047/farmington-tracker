@@ -1,4 +1,5 @@
 import json
+from typing import Any
 import utils
 
 from core.request_handler import request_handler
@@ -157,7 +158,7 @@ for cat in [
     utils.make_lb(database_name, f"{cat}", limit=100, subtitle=subtitle, flag=False)
 for cat in ["name", "abbreviation", "weblink", "discord"]:
 
-    def func_name(x):
+    def func_name_game(x: dict[str, Any]) -> str:
         return f"{x['name']}" + (f" : {x[cat]}" if cat != "name" else "")
 
     utils.make_lb(
@@ -166,7 +167,7 @@ for cat in ["name", "abbreviation", "weblink", "discord"]:
         limit=100,
         subtitle=subtitle,
         flag=False,
-        func_name=func_name,
+        func_name=func_name_game,
     )
 # for cat in ["release-date","created"]:
 #    func_name = lambda x: f"{x['name']} : {x[cat]}"

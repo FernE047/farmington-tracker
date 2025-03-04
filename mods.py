@@ -23,6 +23,8 @@ while True:
         games = request_handler.request(
             f"games?offset={offset}&max={step}&embed=moderators", mute_exceptions=True
         )
+        if not games:
+            raise Exception("010: something wrong happened")
         games = games.get("data", [])
         for game in games:
             game_id = game.get("id", "")

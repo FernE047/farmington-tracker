@@ -1,7 +1,12 @@
 import os
 import time
 import json
+from typing import Any, Callable, Literal
+from common import formatter
 from core.request_handler import request_handler
+
+TIME_DATA = []
+BEGIN = time.time()
 
 
 def dump_info(data, folder):
@@ -35,9 +40,10 @@ def separateNewRuns(runs, lastrun_id):
         if run["id"] == lastrun_id:
             return runs_return
         runs_return.append(run)
+    return runs_return
 
 
-def get_runs(func, **kwargs):
+def get_runs(func, **kwargs) -> list[Any]:
     params = ""
     if kwargs:
         params += "&"
@@ -51,7 +57,7 @@ def get_runs(func, **kwargs):
                 f"runs?direction={direction}&max=200&offset={offset}&orderby=date{params}"
             )
             if not runs:
-                return False  # deleted user while fetching
+                return []  # deleted user while fetching
             runs = runs.get("data", [])
             if direction == "desc":
                 runs = separateNewRuns(runs, lastrun_id)
@@ -74,23 +80,29 @@ def make_lb(
     reverse=True,
     subtitle="",
     flag=True,
-    func_flag="",
-    func_name="",
+    func_flag: Literal[""] | Callable[[dict[str, Any]], str] = "",
+    func_name: Literal[""] | Callable[[dict[str, Any]], str] = "",
 ):
     if flag:
         if not func_flag:
 
-            def func_flag(x):
+            def func_flag_replacer(x: dict[str, Any]) -> str:
                 return f"`:{data['flag']}:`"
+
+            func_flag = func_flag_replacer
     else:
 
-        def func_flag(x):
+        def func_flag_replacer(x: dict[str, Any]) -> str:
             return ""
+
+        func_flag = func_flag_replacer
 
     if not func_name:
 
-        def func_name(x):
+        def func_name_replacer(x):
             return x["name"]
+
+        func_name = func_name_replacer
 
     with open(database, "r", encoding="UTF-8") as f:
         data = json.load(f)
@@ -133,5 +145,13 @@ def time_estimation(n, total, step=1):
     average = sum(TIME_DATA) / len(TIME_DATA)
     to_process = total - n
     remaining = (to_process - 1) * average
-    print(" : ".join([format_time(elapsed_time), str(average), format_time(remaining)]))
+    print(
+        " : ".join(
+            [
+                formatter.format_time(elapsed_time),
+                str(average),
+                formatter.format_time(remaining),
+            ]
+        )
+    )
     BEGIN = end

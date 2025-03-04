@@ -74,7 +74,7 @@ with open("multiplayer_runs.csv", mode="a", newline="", encoding="utf-8") as csv
         runs = utils.get_runs(
             lambda x: x, game=game_id, category=category_id, status="verified"
         )
-        if runs is None:
+        if not runs:
             print("Error retrieving runs. Retrying...")
             time.sleep(5)
             continue
@@ -163,10 +163,12 @@ for n, (user_id, details) in enumerate(final_leaderboard.items(), 1):
     last_one = score
 
 
-def get_user_details(user_id, known_users):
+def get_user_details_plus(user_id, known_users):
     if user_id in known_users:
         return known_users[user_id]
     response = request_handler.request(f"users/{user_id}")
+    if not response:
+        return
     try:
         data = response["data"]
         username = data["names"]["international"]
@@ -215,7 +217,9 @@ for n, (team_id, runs) in enumerate(
     team_display = []
     for user_id in team_members:
         if len(user_id) == 8:
-            details = get_user_details(user_id, known_users)
+            details = get_user_details_plus(user_id, known_users)
+            if not details:
+                continue
             team_display.append(f"{details['flag']}`{details['username']}")
         else:
             team_display.append(f"(guest)`{user_id}")
