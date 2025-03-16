@@ -1,13 +1,20 @@
 import time
-from typing import Any, Literal
+from typing import Any, TypeVar, Type
 import requests
+from common.speedrun_types import ApiVersions
+from random import randint
+
+T = TypeVar("T")
 
 
 class Request_Handler:
+    MAX_RETRIES = 7
+
     def __init__(self, delay: float) -> None:
         self.url_base = "https://www.speedrun.com/api/v"
         self.delay = delay  # delay to not exceed rate limit
         self.RATE_LIMIT = time.time()
+        self.retries = 0
 
     def rate_limit(self) -> None:
         now = time.time()
@@ -16,49 +23,62 @@ class Request_Handler:
             time.sleep(self.delay - duration)
         self.RATE_LIMIT = now
 
-    def build_url(self, requestText: str, v: Literal[1] | Literal[2]) -> str:
+    def build_url(self, requestText: str, v: ApiVersions) -> str:
         return f"{self.url_base}{v}/{requestText}"
 
-    def handle_response_status(
-        self, data: dict[str, Any]
-    ) -> dict[str, Any] | Literal[False] | None:
+    def handle_response_status(self, data: dict[str, Any]) -> dict[str, Any]:
         if "error" in data:
-            raise Exception(data["message"])
+            raise ConnectionError(data["message"])
         if "status" not in data:
             return data
         if data["status"] == 404:
-            return False
-        print(f"sleep 10 secs : {data}")
-        time.sleep(10)
+            raise ResourceWarning("Not found")
+        raise Exception(
+            f"API returned status={data.get('status', 'no status')} with data={data}"
+        )
 
-    def fetch_data(
-        self, url: str, mute_exceptions: bool
-    ) -> dict[str, Any] | Literal[False] | None:
+    def sleep_retry(self, e: Exception) -> None:
+        print(f"Error: {e}. Retrying after 10 seconds...")
+        time_sleep = 2**self.retries + randint(0, 999) / 1000
+        time.sleep(time_sleep)
+        self.retries += 1
+        if self.retries > self.MAX_RETRIES:
+            self.retries = 0
+
+    def fetch_data(self, url: str, mute_exceptions: bool) -> dict[str, Any]:
+        self.retries = 0
         while True:
             self.rate_limit()
             try:
                 response = requests.get(url, timeout=60)
                 data = response.json()
                 status_result = self.handle_response_status(data)
-                if status_result is not None:
-                    return status_result
-            except TimeoutError:
-                print("TimeoutError. Retrying after 10 seconds...")
-                time.sleep(10)
+                return status_result
+            except ConnectionError as e:
+                self.sleep_retry(e)
+            except requests.Timeout as e:
+                self.sleep_retry(e)
+            except ResourceWarning as e:
+                raise e
             except Exception as e:
-                if mute_exceptions:
-                    return
-                print(f"Error: {e}. Retrying after 10 seconds...")
-                time.sleep(10)
+                if not mute_exceptions:
+                    raise e
+                self.sleep_retry(e)
 
     def request(
         self,
-        requestText: str,
-        v: Literal[1] | Literal[2] = 1,
-        mute_exceptions: bool = False,
-    ) -> dict[str, Any] | Literal[False] | None:
-        url = self.build_url(requestText, v)
-        return self.fetch_data(url, mute_exceptions)
+        request_text: str,
+        v: ApiVersions = 1,
+        *,
+        response_type: Type[T],
+        mute_exceptions: bool = True,
+    ) -> T:
+        url = self.build_url(request_text, v)
+        data = self.fetch_data(url, mute_exceptions)
+        if data is None:
+            return data
+        parsed = response_type(**data)
+        return parsed
 
 
 request_handler = Request_Handler(0.7)

@@ -21,7 +21,7 @@ while True:
             offset += 1
             step = 100
         games = request_handler.request(
-            f"games?offset={offset}&max={step}&embed=moderators", mute_exceptions=True
+            f"games?offset={offset}&max={step}&embed=moderators", mute_exceptions=False
         )
         if not games:
             raise Exception("010: something wrong happened")
