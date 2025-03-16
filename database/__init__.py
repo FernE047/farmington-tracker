@@ -34,6 +34,37 @@ class Database_Manager:
             )
         print(f"User {user['id']} updated in both databases.")
 
+    def new_column(self, column_name, default_value):
+        for db in (self.runners, self.public):
+            db.execute_commit(
+                """
+                ALTER TABLE users
+                ADD COLUMN ? TEXT DEFAULT ?;
+            """,
+                (column_name, default_value),
+            )
+        print(f"Column {column_name} added in both databases.")
+
+    def update_values(self, user: dict[str, str | int]):
+        db = self.runners
+        values = []
+        keys = []
+        for key, value in user.items():
+            if key in ("flag", "id", "name"):
+                continue
+            keys.append(f"{key} = ?")
+            values.append(value)
+        keys_str = ", ".join(keys)
+        values.append(user["id"])
+        db.execute_commit(
+            f"""
+                UPDATE users 
+                SET {keys_str}
+                WHERE id = ?
+            """,
+            tuple(values),
+        )
+
     def close(self):
         self.runners.close()
         self.public.close()
