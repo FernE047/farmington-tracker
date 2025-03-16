@@ -1,20 +1,28 @@
 from typing import Generic, Literal, NotRequired, Optional, TypeVar, TypedDict, Union
 
+ApiVersions = Literal[1, 2]
+
+
 class SimpleLink(TypedDict):
     uri: str
+
 
 class SrcLink(SimpleLink):
     rel: str
 
+
 LinksList = list[SrcLink]
+
 
 class NameData(TypedDict):
     international: str
     japanese: Optional[str]
 
+
 class CategoryPlayersRule(TypedDict):
     value: int
     type: Literal["exactly", "up-to"]
+
 
 class CategoryData(TypedDict):
     id: str
@@ -25,12 +33,14 @@ class CategoryData(TypedDict):
     type: Literal["per-game", "per-level"]
     players: CategoryPlayersRule
     links: LinksList
-    game: NotRequired[GameResponse]
-    variables: NotRequired[VariablesResponse]
+    game: NotRequired["GameResponse"]
+    variables: NotRequired["VariablesResponse"]
+
 
 class GuestData(TypedDict):
     name: str
     links: LinksList
+
 
 class LevelData(TypedDict):
     id: str
@@ -38,13 +48,15 @@ class LevelData(TypedDict):
     weblink: str
     rules: str
     links: LinksList
-    categories: NotRequired[CategoriesResponse]
-    variables: NotRequired[VariablesResponse]
+    categories: NotRequired["CategoriesResponse"]
+    variables: NotRequired["VariablesResponse"]
+
 
 class GameInfo(TypedDict):
     id: str
     name: str
     links: LinksList
+
 
 GametypesData = GameInfo
 GenresData = GameInfo
@@ -54,8 +66,10 @@ PublishersData = GameInfo
 RegionsData = GameInfo
 PlatformsData = GameInfo
 
+
 class GameNames(NameData):
     twitch: Optional[str]
+
 
 TimeOptions = Literal["realtime", "realtime_noloads", "ingame"]
 
@@ -73,9 +87,11 @@ GameRuleset = TypedDict(
 
 ModeratorOptions = Literal["moderator", "super-moderator", "verifier"]
 
+
 class ImageData(SimpleLink):
     width: int
     height: int
+
 
 GameAssets = TypedDict(
     "GameAssets",
@@ -102,14 +118,14 @@ GameData = TypedDict(
         "weblink": str,
         "abbreviation": str,
         "release-date": str,
-        "regions": Union[list[str], RegionsResponse],
-        "platforms": Union[list[str], PlatformsResponse],
-        "genres": Union[list[GenresData], GenresResponse],
-        "engines": Union[list[EnginesData], EnginesResponse],
-        "gametypes": Union[list[GametypesData], GametypesResponse],
-        "developers": Union[list[DevelopersData], DevelopersResponse],
-        "publishers": Union[list[PublishersData], PublishersResponse],
-        "moderators": Union[dict[str, ModeratorOptions], UsersResponse],
+        "regions": Union[list[str], "RegionsResponse"],
+        "platforms": Union[list[str], "PlatformsResponse"],
+        "genres": Union[list[GenresData], "GenresResponse"],
+        "engines": Union[list[EnginesData], "EnginesResponse"],
+        "gametypes": Union[list[GametypesData], "GametypesResponse"],
+        "developers": Union[list[DevelopersData], "DevelopersResponse"],
+        "publishers": Union[list[PublishersData], "PublishersResponse"],
+        "moderators": Union[dict[str, ModeratorOptions], "UsersResponse"],
         "names": GameNames,
         "links": LinksList,
         "assets": GameAssets,
@@ -117,11 +133,12 @@ GameData = TypedDict(
         "romhack": Optional[bool],
         "created": Optional[str],
         "released": Optional[int],
-        "levels": NotRequired[LevelsResponse],
-        "categories": NotRequired[CategoriesResponse],
-        "variables": NotRequired[VariablesResponse],
+        "levels": NotRequired["LevelsResponse"],
+        "categories": NotRequired["CategoriesResponse"],
+        "variables": NotRequired["VariablesResponse"],
     },
 )
+
 
 class GameBulkData(TypedDict):
     id: str
@@ -129,22 +146,28 @@ class GameBulkData(TypedDict):
     abbreviation: str
     names: NameData
 
+
 class VariablesScope(TypedDict):
     type: Literal["global", "full-game", "all-levels", "single-level"]
 
+
 class VariablesValuesValuesFlags(TypedDict):
     miscellaneous: bool
+
 
 class VariablesValuesValue(TypedDict):
     label: str
     rules: Optional[str]
     flags: Optional[VariablesValuesValuesFlags]
 
+
 VariablesValuesValues = dict[str, VariablesValuesValue]
+
 
 class VariablesValues(TypedDict):
     values: VariablesValuesValues
     default: str
+
 
 VariablesData = TypedDict(
     "VariablesData",
@@ -162,12 +185,15 @@ VariablesData = TypedDict(
     },
 )
 
+
 class RunVideos(TypedDict):
     links: list[SimpleLink]
     text: Optional[str]
 
+
 class RunStatusNew(TypedDict):
     status: Literal["new"]
+
 
 RunStatusVerified = TypedDict(
     "RunStatusVerified",
@@ -190,15 +216,19 @@ RunStatusRejected = TypedDict(
 
 RunStatus = Union[RunStatusNew, RunStatusVerified, RunStatusRejected]
 
+
 class RunPlayersRegistered(SimpleLink):
     id: str
     rel: Literal["user"]
+
 
 class RunPlayersGuests(SimpleLink):
     name: str
     rel: Literal["guest"]
 
+
 RunPlayers = Union[RunPlayersRegistered, RunPlayersGuests]
+
 
 class RunTimes(TypedDict):
     primary: str
@@ -210,52 +240,57 @@ class RunTimes(TypedDict):
     ingame: Optional[str]
     ingame_t: Optional[float]
 
+
 class RunSystem(TypedDict):
     emulated: bool
-    platform: Union[str, PlatformResponse]
-    region: Optional[Union[str, RegionResponse]]
+    platform: Union[str, "PlatformResponse"]
+    region: Optional[Union[str, "RegionResponse"]]
+
 
 class RunData(TypedDict):
     id: str
-    game: Union[str, GameResponse]
+    game: Union[str, "GameResponse"]
     weblink: str
     comment: str
-    category: Union[str, CategoryResponse]
+    category: Union[str, "CategoryResponse"]
     status: RunStatus
-    players: Union[list[RunPlayers], UsersResponse]
+    players: Union[list[RunPlayers], "UsersResponse"]
     values: dict[str, str]
     links: LinksList
     times: RunTimes
     system: RunSystem
     date: Optional[str]
-    level: Optional[Union[str, LevelResponse]]
+    level: Optional[Union[str, "LevelResponse"]]
     submitted: Optional[str]
     videos: Optional[RunVideos]
     splits: Optional[SrcLink]
+
 
 class LeaderboardRuns(TypedDict):
     place: int
     run: RunData
 
+
 LeaderboardData = TypedDict(
     "LeaderboardData",
     {
-        "game": Union[str, GameResponse],
+        "game": Union[str, "GameResponse"],
         "weblink": str,
-        "category": Union[str, CategoryResponse],
+        "category": Union[str, "CategoryResponse"],
         "video-only": bool,
         "runs": list[LeaderboardRuns],
         "values": dict[str, str],
         "links": LinksList,
         "timing": TimeOptions,
-        "level": Optional[Union[str, LevelResponse]],
-        "region": Optional[Union[str, RegionsResponse]],
-        "platform": Optional[Union[str, PlatformsResponse]],
+        "level": Optional[Union[str, "LevelResponse"]],
+        "region": Optional[Union[str, "RegionsResponse"]],
+        "platform": Optional[Union[str, "PlatformsResponse"]],
         "emulators": Optional[bool],
-        "players": NotRequired[UsersResponse],
-        "variables": NotRequired[VariablesResponse],
+        "players": NotRequired["UsersResponse"],
+        "variables": NotRequired["VariablesResponse"],
     },
 )
+
 
 class Notification(TypedDict):
     id: str
@@ -265,13 +300,16 @@ class Notification(TypedDict):
     item: SrcLink
     links: LinksList
 
+
 class ColorData(TypedDict):
     light: str
     dark: str
 
+
 class NameStyleSolid(TypedDict):
     style: Literal["solid"]
     color: ColorData
+
 
 NameStyleGradient = TypedDict(
     "NameStyleGradient",
@@ -284,13 +322,16 @@ NameStyleGradient = TypedDict(
 
 NameStyle = Union[NameStyleSolid, NameStyleGradient]
 
+
 class UserLocationData(TypedDict):
     code: str
     names: NameData
 
+
 class UserLocation(TypedDict):
     country: UserLocationData
     region: Optional[UserLocationData]
+
 
 UserRoleOptions = Literal[
     "banned", "user", "trusted", "moderator", "admin", "programmer"
@@ -315,17 +356,20 @@ UserData = TypedDict(
     },
 )
 
+
 class PersonalBestData(TypedDict):
     place: int
     run: RunData
-    game: NotRequired[GameResponse]
-    category: NotRequired[CategoryResponse]
-    level: NotRequired[LevelResponse]
-    players: NotRequired[UserResponse]
-    region: NotRequired[RegionResponse]
-    platform: NotRequired[PlatformResponse]
+    game: NotRequired["GameResponse"]
+    category: NotRequired["CategoryResponse"]
+    level: NotRequired["LevelResponse"]
+    players: NotRequired["UserResponse"]
+    region: NotRequired["RegionResponse"]
+    platform: NotRequired["PlatformResponse"]
+
 
 ModeratorSeriesOptions = Literal["moderator", "super-moderator"]
+
 
 class SeriesData(TypedDict):
     id: str
@@ -335,12 +379,15 @@ class SeriesData(TypedDict):
     names: NameData
     links: LinksList
     assets: GameAssets
-    moderators: Union[dict[str, ModeratorSeriesOptions], UsersResponse]
+    moderators: Union[dict[str, ModeratorSeriesOptions], "UsersResponse"]
 
-data = TypeVar("data")
 
-class BaseResponse(TypedDict, Generic[data]):
-    data: data
+T = TypeVar("T")
+
+
+class BaseResponse(TypedDict, Generic[T]):
+    data: T
+
 
 CategoryResponse = BaseResponse[CategoryData]
 GuestResponse = BaseResponse[GuestData]
@@ -359,8 +406,10 @@ LeaderboardResponse = BaseResponse[LeaderboardData]
 UserResponse = BaseResponse[UserData]
 SerieResponse = BaseResponse[SeriesData]
 
-class ListResponse(TypedDict, Generic[data]):
-    data: list[data]
+
+class ListResponse(TypedDict, Generic[T]):
+    data: list[T]
+
 
 CategoriesResponse = ListResponse[CategoryData]
 LevelsResponse = ListResponse[LevelData]
@@ -379,13 +428,17 @@ UsersResponse = ListResponse[UserData]
 PersonalBestResponse = ListResponse[PersonalBestData]
 SeriesResponse = ListResponse[SeriesData]
 
+
 class NextLink(SimpleLink):
     rel: Literal["next"]
+
 
 class PrevLink(SimpleLink):
     rel: Literal["prev"]
 
+
 LinkPagination = Union[NextLink, PrevLink]
+
 
 class PaginationData(TypedDict):
     offset: int
@@ -393,9 +446,11 @@ class PaginationData(TypedDict):
     size: int
     links: list[LinkPagination]
 
-class PaginatedResponse(TypedDict, Generic[data]):
-    data: data
+
+class PaginatedResponse(TypedDict, Generic[T]):
+    data: T
     pagination: PaginationData
+
 
 CategoriesResponsePaginated = PaginatedResponse[CategoriesResponse]
 LevelsResponsePaginated = PaginatedResponse[LevelsResponse]
@@ -403,6 +458,7 @@ PlatformsResponsePaginated = PaginatedResponse[PlatformsResponse]
 GamesResponsePaginated = PaginatedResponse[GamesResponse]
 RunsResponsePaginated = PaginatedResponse[RunsResponse]
 UsersResponsePaginated = PaginatedResponse[UsersResponse]
+
 
 class GamesBulkResponse(TypedDict):
     data: list[GameBulkData]
