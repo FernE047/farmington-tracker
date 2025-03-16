@@ -1,4 +1,4 @@
-from typing import Literal, NotRequired, Optional, TypedDict, Union
+from typing import Generic, Literal, NotRequired, Optional, TypeVar, TypedDict, Union
 
 class SimpleLink(TypedDict):
     uri: str
@@ -46,26 +46,13 @@ class GameInfo(TypedDict):
     name: str
     links: LinksList
 
-class GametypesData(GameInfo):
-    pass
-
-class GenresData(GameInfo):
-    pass
-
-class EnginesData(GameInfo):
-    pass
-
-class DevelopersData(GameInfo):
-    pass
-
-class PublishersData(GameInfo):
-    pass
-
-class RegionsData(GameInfo):
-    pass
-
-class PlatformsData(GameInfo):
-    pass
+GametypesData = GameInfo
+GenresData = GameInfo
+EnginesData = GameInfo
+DevelopersData = GameInfo
+PublishersData = GameInfo
+RegionsData = GameInfo
+PlatformsData = GameInfo
 
 class GameNames(NameData):
     twitch: Optional[str]
@@ -350,107 +337,53 @@ class SeriesData(TypedDict):
     assets: GameAssets
     moderators: Union[dict[str, ModeratorSeriesOptions], UsersResponse]
 
-class CategoryResponse(TypedDict):
-    data: CategoryData
+data = TypeVar("data")
 
-class GuestResponse(TypedDict):
-    data: GuestData
+class BaseResponse(TypedDict, Generic[data]):
+    data: data
 
-class LevelResponse(TypedDict):
-    data: LevelData
+CategoryResponse = BaseResponse[CategoryData]
+GuestResponse = BaseResponse[GuestData]
+LevelResponse = BaseResponse[LevelData]
+GametypeResponse = BaseResponse[GametypesData]
+GenreResponse = BaseResponse[GenresData]
+EngineResponse = BaseResponse[EnginesData]
+DeveloperResponse = BaseResponse[DevelopersData]
+PublisherResponse = BaseResponse[PublishersData]
+RegionResponse = BaseResponse[RegionsData]
+PlatformResponse = BaseResponse[PlatformsData]
+GameResponse = BaseResponse[GameData]
+VariableResponse = BaseResponse[VariablesData]
+RunResponse = BaseResponse[RunData]
+LeaderboardResponse = BaseResponse[LeaderboardData]
+UserResponse = BaseResponse[UserData]
+SerieResponse = BaseResponse[SeriesData]
 
-class GametypeResponse(TypedDict):
-    data: GametypesData
+class ListResponse(TypedDict, Generic[data]):
+    data: list[data]
 
-class GenreResponse(TypedDict):
-    data: GenresData
-
-class EngineResponse(TypedDict):
-    data: EnginesData
-
-class DeveloperResponse(TypedDict):
-    data: DevelopersData
-
-class PublisherResponse(TypedDict):
-    data: PublishersData
-
-class RegionResponse(TypedDict):
-    data: RegionsData
-
-class PlatformResponse(TypedDict):
-    data: PlatformsData
-
-class GameResponse(TypedDict):
-    data: GameData
-
-class VariableResponse(TypedDict):
-    data: VariablesData
-
-class RunResponse(TypedDict):
-    data: RunData
-
-class LeaderboardResponse(TypedDict):
-    data: LeaderboardData
-
-class UserResponse(TypedDict):
-    data: UserData
-
-class SerieResponse(TypedDict):
-    data: SeriesData
-
-class CategoriesResponse(TypedDict):
-    data: list[CategoryData]
-
-class LevelsResponse(TypedDict):
-    data: list[LevelData]
-
-class GametypesResponse(TypedDict):
-    data: list[GametypesData]
-
-class GenresResponse(TypedDict):
-    data: list[GenresData]
-
-class EnginesResponse(TypedDict):
-    data: list[EnginesData]
-
-class DevelopersResponse(TypedDict):
-    data: list[DevelopersData]
-
-class PublishersResponse(TypedDict):
-    data: list[PublishersData]
-
-class RegionsResponse(TypedDict):
-    data: list[RegionsData]
-
-class PlatformsResponse(TypedDict):
-    data: list[PlatformsData]
-
-class GamesResponse(TypedDict):
-    data: list[GameData]
-
-class VariablesResponse(TypedDict):
-    data: list[VariablesData]
-
-class RunsResponse(TypedDict):
-    data: list[RunData]
-
-class LeaderboardsResponse(TypedDict):
-    data: list[LeaderboardData]
+CategoriesResponse = ListResponse[CategoryData]
+LevelsResponse = ListResponse[LevelData]
+GametypesResponse = ListResponse[GametypesData]
+GenresResponse = ListResponse[GenresData]
+EnginesResponse = ListResponse[EnginesData]
+DevelopersResponse = ListResponse[DevelopersData]
+PublishersResponse = ListResponse[PublishersData]
+RegionsResponse = ListResponse[RegionsData]
+PlatformsResponse = ListResponse[PlatformsData]
+GamesResponse = ListResponse[GameData]
+VariablesResponse = ListResponse[VariablesData]
+RunsResponse = ListResponse[RunData]
+LeaderboardsResponse = ListResponse[LeaderboardData]
+UsersResponse = ListResponse[UserData]
+PersonalBestResponse = ListResponse[PersonalBestData]
+SeriesResponse = ListResponse[SeriesData]
 
 class NextLink(SimpleLink):
     rel: Literal["next"]
 
 class PrevLink(SimpleLink):
     rel: Literal["prev"]
-
-class UsersResponse(TypedDict):
-    data: list[UserData]
-
-class PersonalBestResponse(TypedDict):
-    data: list[PersonalBestData]
-
-class SeriesResponse(TypedDict):
-    data: list[SeriesData]
 
 LinkPagination = Union[NextLink, PrevLink]
 
@@ -460,23 +393,16 @@ class PaginationData(TypedDict):
     size: int
     links: list[LinkPagination]
 
-class CategoriesResponsePaginated(CategoriesResponse):
+class PaginatedResponse(TypedDict, Generic[data]):
+    data: data
     pagination: PaginationData
 
-class LevelsResponsePaginated(LevelsResponse):
-    pagination: PaginationData
-
-class PlatformsResponsePaginated(PlatformsResponse):
-    pagination: PaginationData
-
-class GamesResponsePaginated(GamesResponse):
-    pagination: PaginationData
-
-class RunsResponsePaginated(RunsResponse):
-    pagination: PaginationData
-
-class UsersResponsePaginated(UsersResponse):
-    pagination: PaginationData
+CategoriesResponsePaginated = PaginatedResponse[CategoriesResponse]
+LevelsResponsePaginated = PaginatedResponse[LevelsResponse]
+PlatformsResponsePaginated = PaginatedResponse[PlatformsResponse]
+GamesResponsePaginated = PaginatedResponse[GamesResponse]
+RunsResponsePaginated = PaginatedResponse[RunsResponse]
+UsersResponsePaginated = PaginatedResponse[UsersResponse]
 
 class GamesBulkResponse(TypedDict):
     data: list[GameBulkData]
