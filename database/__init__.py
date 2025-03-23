@@ -79,9 +79,8 @@ class Database:
         self._data_iter = None
 
     def filter_by(self, **kwargs):
-        # Save the filter parameters
         self._filters = kwargs
-        self._data_iter = None  # Reset iterator
+        self._data_iter = None
 
     def execute_commit(self, query, values):
         try:
@@ -91,7 +90,7 @@ class Database:
             print(f"{values} already exists in {self.name}.db.")
 
     def fetch_all(self):
-        query = "SELECT id, flag, name FROM users"
+        query = "SELECT * FROM users"
         params = []
 
         if self._filters:
@@ -100,12 +99,11 @@ class Database:
                 where_clauses.append(f"{column} = ?")
                 params.append(value)
             query += " WHERE " + " AND ".join(where_clauses)
-        print()
+
         self.cursor.execute(query, params)
+        column_names = [desc[0] for desc in self.cursor.description]
         rows = self.cursor.fetchall()
-        self._data_iter = iter(
-            [{"id": row[0], "flag": row[1], "name": row[2]} for row in rows]
-        )
+        self._data_iter = iter([dict(zip(column_names, row)) for row in rows])
 
     def __iter__(self):
         if self._data_iter is None:
@@ -119,9 +117,3 @@ class Database:
 
     def close(self):
         self.connection.close()
-
-
-db = Database_Manager()
-db.public.filter_by(flag="flag_br")
-for a in db.public:
-    print(a)
