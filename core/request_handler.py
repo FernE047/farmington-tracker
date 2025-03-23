@@ -13,15 +13,15 @@ class Request_Handler:
     def __init__(self, delay: float) -> None:
         self.url_base = "https://www.speedrun.com/api/v"
         self.delay = delay  # delay to not exceed rate limit
-        self.RATE_LIMIT = time.time()
+        self.last_execution = time.time()
         self.retries = 0
 
     def rate_limit(self) -> None:
         now = time.time()
-        duration = now - self.RATE_LIMIT
+        duration = now - self.last_execution
         if duration < self.delay:
             time.sleep(self.delay - duration)
-        self.RATE_LIMIT = now
+        self.last_execution = now
 
     def build_url(self, requestText: str, v: ApiVersions) -> str:
         return f"{self.url_base}{v}/{requestText}"
@@ -75,8 +75,6 @@ class Request_Handler:
     ) -> T:
         url = self.build_url(request_text, v)
         data = self.fetch_data(url, mute_exceptions)
-        if data is None:
-            return data
         parsed = response_type(**data)
         return parsed
 
