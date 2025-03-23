@@ -3,11 +3,11 @@ import sqlite3
 
 class Database_Manager:
     def __init__(self):
-        self.runners = Database("runners")
+        self.private = Database("private")
         self.public = Database("public")
 
     def add_user(self, user):
-        self.runners.execute_commit(
+        self.private.execute_commit(
             """
             INSERT INTO users (id, name, flag, Large_20k) 
             VALUES (?, ?, ?, ?)
@@ -23,7 +23,7 @@ class Database_Manager:
         )
 
     def update_user(self, user):
-        for db in (self.runners, self.public):
+        for db in (self.private, self.public):
             db.execute_commit(
                 """
                 UPDATE users 
@@ -35,7 +35,7 @@ class Database_Manager:
         print(f"User {user['id']} updated in both databases.")
 
     def new_column(self, column_name, default_value):
-        for db in (self.runners, self.public):
+        for db in (self.private, self.public):
             db.execute_commit(
                 """
                 ALTER TABLE users
@@ -46,7 +46,7 @@ class Database_Manager:
         print(f"Column {column_name} added in both databases.")
 
     def update_values(self, user: dict[str, str | int]):
-        db = self.runners
+        db = self.private
         values = []
         keys = []
         for key, value in user.items():
@@ -66,7 +66,7 @@ class Database_Manager:
         )
 
     def close(self):
-        self.runners.close()
+        self.private.close()
         self.public.close()
 
 
@@ -75,6 +75,13 @@ class Database:
         self.name = name
         self.connection = sqlite3.connect(f"./database/{name}.db")
         self.cursor = self.connection.cursor()
+        self._filters = {}
+        self._data_iter = None
+
+    def filter_by(self, **kwargs):
+        # Save the filter parameters
+        self._filters = kwargs
+        self._data_iter = None  # Reset iterator
 
     def execute_commit(self, query, values):
         try:
@@ -83,5 +90,38 @@ class Database:
         except sqlite3.IntegrityError:
             print(f"{values} already exists in {self.name}.db.")
 
+    def fetch_all(self):
+        query = "SELECT id, flag, name FROM users"
+        params = []
+
+        if self._filters:
+            where_clauses = []
+            for column, value in self._filters.items():
+                where_clauses.append(f"{column} = ?")
+                params.append(value)
+            query += " WHERE " + " AND ".join(where_clauses)
+        print()
+        self.cursor.execute(query, params)
+        rows = self.cursor.fetchall()
+        self._data_iter = iter(
+            [{"id": row[0], "flag": row[1], "name": row[2]} for row in rows]
+        )
+
+    def __iter__(self):
+        if self._data_iter is None:
+            self.fetch_all()
+        return self
+
+    def __next__(self):
+        if self._data_iter is None:
+            raise StopIteration
+        return next(self._data_iter)
+
     def close(self):
         self.connection.close()
+
+
+db = Database_Manager()
+db.public.filter_by(flag="flag_br")
+for a in db.public:
+    print(a)
