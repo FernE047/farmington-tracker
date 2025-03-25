@@ -1,32 +1,44 @@
-import json
-import utils
+from typing import Any
+from ..common.type_def import UserDatabaseData
+from . import Database_Manager
+from ..common.speedrun_types import UserData
 from core.request_handler import request_handler
 
 
-def extract_flag(user_update):
-    flag = user_update.get("location", {})
-    if not flag:
+def extract_flag(user_update: UserData) -> str:
+    location = user_update.get("location")
+    if location is None:
         return "united_nations"
-    flag = flag.get("country", {}).get("code", "")
-    if not flag:
+    country_code = location.get("country", {}).get("code", "")
+    if not country_code:
         return "united_nations"
-    return f"flag_{flag[:2]}"
+    return f"flag_{country_code[:2]}"
 
 
-def main():
-    with open("database.json", "r", encoding="UTF-8") as f:
-        users_data = json.load(f)
-    for n, user in enumerate(users_data):
-        user_update = request_handler.request(f"users/{user['id']}")
-        if not user_update:
-            user["deleted"] = True
+def get_user_info(user_id: str) -> UserDatabaseData:
+    user_update: UserData = request_handler.request(
+        f"users/{user_id}", response_type=UserData
+    )
+    if not user_update:
+        raise ResourceWarning(f"{user_id} was deleted")
+    user: dict[str, Any] = {}
+    user = user_update.get("data", {})
+    user["flag"] = extract_flag(user_update)
+    user["name"] = user_update.get("names", {}).get("international", user["name"])
+    return UserDatabaseData(**user)
+
+
+def main() -> None:
+    db = Database_Manager()
+    for user in db.public:
+        user_id = user.get("id")
+        if user_id is None:
             continue
-        user_update = user_update.get("data", {})
-        user["flag"] = extract_flag(user_update)
-        user["name"] = user_update.get("names", {}).get("international", user["name"])
-        utils.time_estimation(n, len(users_data))
-    with open("database.json", "w", encoding="UTF-8") as f:
-        json.dump(users_data, f, indent=4)
+        try:
+            user_update = get_user_info(user_id)
+            db.update_user(user_update)
+        except ResourceWarning as _:
+            print(f"{user['name']} was deleted")
 
 
 if __name__ == "__main__":
