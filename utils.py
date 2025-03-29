@@ -2,7 +2,7 @@ import os
 import time
 import json
 from typing import Any, Callable, Literal
-from common import formatter
+from core import formatter
 from core.request_handler import request_handler
 
 TIME_DATA = []
@@ -127,12 +127,6 @@ def make_lb(
             f.writelines(f"`{position}.{flag}{name}{pretty_spaces} {value}`\n")
             untied_position += 1
             last_value = value
-
-
-def is_user_deleted(**kwargs):
-    params = "=".join(list(kwargs.items())[0])
-    runs = request_handler.request(f"runs?{params}&max=1")
-    return not runs
 
 
 def time_estimation(n, total, step=1):

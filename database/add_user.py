@@ -1,4 +1,4 @@
-from .update_users import get_user_info
+from ..users import get_user_info
 from . import Database_Manager
 
 

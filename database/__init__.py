@@ -1,7 +1,7 @@
 import sqlite3
-from typing import Any, Self
+from typing import Any, Iterator, Optional, Self
 
-from ..common.type_def import UserDatabaseData
+from common.type_def import UserDatabaseData
 
 
 class Database_Manager:
@@ -79,10 +79,10 @@ class Database:
         self.connection = sqlite3.connect(f"./database/{name}.db")
         self.cursor = self.connection.cursor()
         self._filters: dict[str, Any] = {}
-        self._data_iter = None
+        self._data_iter: Optional[Iterator[dict[str, Any]]] = None
 
     def filter_by(self, **kwargs: Any) -> None:
-        self._filters: dict[str, Any] = kwargs
+        self._filters = kwargs
         self._data_iter = None
 
     def execute_commit(self, query: str, values: list[Any]) -> None:

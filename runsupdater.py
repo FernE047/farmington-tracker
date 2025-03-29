@@ -1,5 +1,6 @@
 import json
-from common import formatter
+from core import formatter
+from database import Database_Manager
 import utils
 import os
 
@@ -38,12 +39,9 @@ def getRuns20k(user):
     return allruns
 
 
-def main():
-    with open("database.json", "r", encoding="UTF-8") as f:
-        user_data = json.load(f)
-    # updateAllPlatforms()
-    total = len(user_data)
-    for n, user in enumerate(user_data):
+def main() -> None:
+    db = Database_Manager()
+    for user in db.public:
         if utils.is_user_deleted(user=user["id"]):
             print(f"deleted : {user['name']}")
             continue

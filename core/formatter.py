@@ -1,9 +1,3 @@
-import time
-
-BEGIN = time.time()
-TIME_DATA = []
-
-
 def format_time(seconds: int) -> str:
     days = seconds // 86400
     hours = (seconds % 86400) // 3600
